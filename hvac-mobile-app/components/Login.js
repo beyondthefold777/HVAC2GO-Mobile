@@ -1,11 +1,31 @@
-import React from 'react'; 
-import { View, Text, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AntDesign, FontAwesome5, Entypo } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import axios from 'axios';
 
-const LandingPage = () => {
+const Login = () => {
+  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [message, setMessage] = useState('');
   const navigation = useNavigation();
+  const apiUrl = process.env.REACT_NATIVE_API_URL;
+
+  const handleChange = (name, value) => {
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleSubmit = async () => {
+    try {
+      const response = await axios.post(`${apiUrl}/api/login`, formData);
+      const token = response.data.token;
+      // Store token locally in async storage or secure storage
+      setMessage('Login successful');
+      navigation.navigate('Home'); // Replace with your home screen navigation
+    } catch (error) {
+      setMessage(error.response?.data.message || 'Login failed');
+    }
+  };
 
   return (
     <LinearGradient
@@ -34,32 +54,31 @@ const LandingPage = () => {
           end={{ x: 1, y: 0 }}
           style={styles.card}
         >
-          <Text style={styles.title}>
-            Looking to diagnose your HVAC unit? Let us help!
-          </Text>
+          <Text style={styles.title}>Login</Text>
 
-          <Text style={styles.description}>
-            Get guided troubleshooting with step-by-step instructions, connect with certified technicians, or schedule a service call right from our app.
-          </Text>
+          <TextInput
+            placeholder="Email"
+            placeholderTextColor="#bbb"
+            style={styles.input}
+            onChangeText={(value) => handleChange('email', value)}
+          />
+          <TextInput
+            placeholder="Password"
+            placeholderTextColor="#bbb"
+            style={styles.input}
+            secureTextEntry={true}
+            onChangeText={(value) => handleChange('password', value)}
+          />
 
-          <View style={styles.iconRow}>
-            <View style={styles.iconContainer}>
-              <AntDesign name="videocamera" size={36} color="#38b2ac" />
-              <Text style={styles.iconLabel}>Virtual Help</Text>
-            </View>
-
-            <View style={styles.iconContainer}>
-              <FontAwesome5 name="wrench" size={36} color="#38b2ac" />
-              <Text style={styles.iconLabel}>Technician Access</Text>
-            </View>
-          </View>
-
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => navigation.navigate('Register')} 
-          >
-            <Text style={styles.buttonText}>Get Connected</Text>
+          <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+            <Text style={styles.buttonText}>Login</Text>
             <AntDesign name="arrowright" size={24} color="#fff" />
+          </TouchableOpacity>
+
+          {message ? <Text style={styles.message}>{message}</Text> : null}
+
+          <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+            <Text style={styles.linkText}>Don't have an account? Register here</Text>
           </TouchableOpacity>
         </LinearGradient>
       </View>
@@ -71,10 +90,8 @@ const LandingPage = () => {
         style={styles.bottomMenu}
       >
         <TouchableOpacity style={styles.accountContainer}>
-          <View>
-            <FontAwesome5 name="user-alt" size={30} color="#fff" style={styles.bottomIcon} />
-            <Text style={styles.bottomIconText}>Account</Text>
-          </View>
+          <FontAwesome5 name="user-alt" size={30} color="#fff" />
+          <Text style={styles.bottomIconText}>Account</Text>
         </TouchableOpacity>
       </LinearGradient>
     </LinearGradient>
@@ -95,7 +112,7 @@ const styles = StyleSheet.create({
   menuIcon: {
     position: 'absolute',
     left: 20,
-    top: 20,
+    top: 10,
   },
   cardContainer: {
     flex: 1,
@@ -107,10 +124,6 @@ const styles = StyleSheet.create({
   card: {
     padding: 20,
     borderRadius: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
     width: '100%',
     alignItems: 'center',
   },
@@ -119,27 +132,14 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 10,
-  },
-  description: {
-    color: '#fff',
-    fontSize: 16,
-    textAlign: 'center',
     marginBottom: 20,
   },
-  iconRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+  input: {
+    backgroundColor: '#fff',
     width: '100%',
-    marginBottom: 20,
-  },
-  iconContainer: {
-    alignItems: 'center',
-  },
-  iconLabel: {
-    color: '#fff',
-    marginTop: 10,
-    textAlign: 'center',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 15,
   },
   button: {
     flexDirection: 'row',
@@ -155,6 +155,15 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginRight: 10,
   },
+  message: {
+    color: '#ff0000',
+    marginTop: 10,
+  },
+  linkText: {
+    color: '#fff',
+    marginTop: 20,
+    textDecorationLine: 'underline',
+  },
   bottomMenu: {
     width: '100%',
     height: 80,
@@ -163,13 +172,9 @@ const styles = StyleSheet.create({
   },
   accountContainer: {
     position: 'absolute',
-    right: 25,
+    right: 20,
     bottom: 10,
     alignItems: 'center',
-  },
-  bottomIcon: {
-    marginBottom: 5,
-    right: -10,
   },
   bottomIconText: {
     color: '#fff',
@@ -178,4 +183,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LandingPage;
+export default Login;
